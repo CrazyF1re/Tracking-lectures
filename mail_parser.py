@@ -1,5 +1,5 @@
 from playwright.sync_api import sync_playwright
-
+from config import login, psw
 
 import time
 
@@ -9,8 +9,7 @@ message_url = 'https://mail.yandex.ru/?uid=752034275#message/'
 
 def get_data():
     with sync_playwright() as p:
-        login = 'cher.ne@yandex.ru'
-        psw = 'xthyztdf75'
+
         browser = p.chromium.launch(headless= False)
         page = browser.new_page()
         page.goto(mail_url)
