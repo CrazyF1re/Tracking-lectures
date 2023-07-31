@@ -1,12 +1,13 @@
 from playwright.sync_api import sync_playwright
 
-#import bs4 
+
 import time
 
 mail_url = 'https://passport.yandex.ru/auth'
+folder_url = 'https://mail.yandex.ru/?uid=752034275#folder/22'
+message_url = 'https://mail.yandex.ru/?uid=752034275#message/'
 
-
-def get_urls():
+def get_data():
     with sync_playwright() as p:
         login = 'cher.ne@yandex.ru'
         psw = 'xthyztdf75'
@@ -20,19 +21,40 @@ def get_urls():
         page.wait_for_timeout(1000)
         page.query_selector('[name="passwd"]').fill(psw)
         page.click('id=passp:sign-in')
+        page.wait_for_timeout(1500)
+        page.goto(folder_url)
+        page.wait_for_url(folder_url)
         page.wait_for_timeout(1000)
-        page.goto('https://mail.yandex.ru/?uid=752034275#inbox')
-        list_of_msgs = [for i in page.query_selector_all()]
+
+        #load all messages for today
+        messages = page.query_selector_all('[class = mail-MessageSnippet-Item_dateText]')
+        while messages.pop().text_content().find(':') != -1:
+            page.query_selector('[class= _nb-button-content]').click()
+            messages = page.query_selector_all('[class = mail-MessageSnippet-Item_dateText]')
+
+        #find index of first message today
+        for i in messages:
+            if  i.text_content().find(':') == -1 :
+                index = messages.index(i)
+                break
+
+        #if noone msg sent today    
+        if index == 0:
+            return
         
-        browser.new_page()
+        #get time and urls
+        pages  = page.query_selector_all('a[class = "mail-MessageSnippet js-message-snippet toggles-svgicon-on-important toggles-svgicon-on-unread"]')
+        for i in range(index): 
+            pages[i].click()
+            page.wait_for_timeout(1000)
+            #url
+            print(page.query_selector('a[class = "46809b2d9d518540button-link"]').get_attribute('href'))
+
+            #time as list (need to convert to time format)
+            print(page.query_selector('div[class = "6943960f0ad08528event-info"]').text_content().split())
+
+            page.go_back()
         time.sleep(300)
     
-    
-# <button data-t="button:default" 
-# data-type="login"
-# type="button"
-# class="Button2 Button2_checked Button2_size_l Button2_view_default"
-#  aria-pressed="true"
-#  autocomplete="off">
-#  <span class="Button2-Text">Почта</span></button>
-get_urls()
+
+get_data()
