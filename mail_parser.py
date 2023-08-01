@@ -52,7 +52,6 @@ def get_data():
             print(page.query_selector('div[class = "6943960f0ad08528event-info"]').text_content().split())
 
             page.go_back()
-        time.sleep(300)
     
 
 get_data()
