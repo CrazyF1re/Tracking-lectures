@@ -5,7 +5,6 @@ import time
 
 mail_url = 'https://passport.yandex.ru/auth'
 folder_url = 'https://mail.yandex.ru/?uid=752034275#folder/22'
-message_url = 'https://mail.yandex.ru/?uid=752034275#message/'
 
 def get_data():
     with sync_playwright() as p:

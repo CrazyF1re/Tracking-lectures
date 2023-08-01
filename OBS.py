@@ -9,49 +9,41 @@ import time
 
 
 
-os.chdir("C:\\Program Files\\obs-studio\\bin\\64bit\\")
-app = Application(backend="uia").start('obs64.exe')
-app.window(best_match='OBS')
 
+class OBS:
+    def __init__(self) -> None:
+        self.app = Application(backend="uia")
+        self.is_run = 0
+    def is_running(self):
+        return self.is_run   
+    def run(self):
+        os.chdir("C:\\Program Files\\obs-studio\\bin\\64bit\\")
+        try:
+            self.app.connect(path = "obs64.exe")
+            self.app.Dialog.click_input()
+        except:
+            self.app.start('obs64.exe')
+            self.app.window(best_match='OBS')
 
+        self.is_run = 1
 
-def set_up_sourse():
-    for i in app.Dialog.Dialog2.ListBox:
-        f = (str(i).find('LectureRecorder'))
-        if f>=0:
-            break
-    if f==-1:
-        app.Dialog.Dialog2.child_window(title="Добавить", control_type="Button").click_input()
-        keyboard.send_keys("{DOWN} {ENTER}LectureRecorder {ENTER}")
+    def set_up_sourse(self):
+        OBS.run(self)
+        for i in self.app.Dialog.Dialog2.ListBox:
+            f = (str(i).find('LectureRecorder'))
+            if f>=0:
+                return
+        if f==-1:
+            self.app.Dialog.Dialog2.child_window(title="Добавить", control_type="Button").click_input()
+            keyboard.send_keys("{DOWN 7} {ENTER}LectureRecorder {ENTER 3}")
 
+    def start_recording(self):
+        self.app.Dialog.Dialog2.child_window(title="LectureRecorder", control_type="ListItem").click_input()
+        keyboard.send_keys("{TAB 6}{SPACE}")
 
-    app.Dialog.Dialog2.child_window(title="LectureRecorder", control_type="ListItem").click_input(button = 'right')
-    keyboard.send_keys("{UP} {ENTER}")
-    app.Dialog['Свойства «LectureRecorder»'].child_window(title="URL-адрес", control_type="Text").click_input()
-    mouse.click(coords= pyautogui.position())
-    keyboard.send_keys("{TAB 2} ")
-    keyboard.send_keys("URL{TAB}")
-    keyboard.send_keys("{BACKSPACE 4}1920{TAB}")
-    keyboard.send_keys("{BACKSPACE 4}1080{ENTER}")
+    def stop_recording(self):
+        self.app.Dialog.Dialog2.child_window(title="LectureRecorder", control_type="ListItem").click_input()
+        keyboard.send_keys("{TAB 6}{SPACE}")
+    def close_app(self):
+        self.app.kill()
 
-def set_url(url):
-    app.Dialog.Dialog2.child_window(title="LectureRecorder", control_type="ListItem").click_input(button = 'right')
-    keyboard.send_keys("{UP} {ENTER}")
-    app.Dialog['Свойства «LectureRecorder»'].child_window(title="URL-адрес", control_type="Text").click_input()
-    mouse.click(coords= pyautogui.position())
-    keyboard.send_keys("{TAB 2} ")
-    keyboard.send_keys(url+"{TAB}")
-
-def start_recording():
-    app.Dialog.Dialog2.child_window(title="LectureRecorder", control_type="ListItem").click_input()
-    keyboard.send_keys("{TAB 6}{SPACE}")
-
-def stop_recording():
-    app.Dialog.Dialog2.child_window(title="LectureRecorder", control_type="ListItem").click_input()
-    keyboard.send_keys("{TAB 6}{SPACE}")
-
-#close app
-
-time.sleep(3)
-
-app['Dialog']['TitleBar'].child_window(title="Закрыть", control_type = "Button").click()# print_control_identifiers()
