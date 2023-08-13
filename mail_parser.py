@@ -2,10 +2,14 @@ from playwright.async_api import async_playwright
 from config import login, psw
 from datetime import datetime
 
+
+
+
 mail_url = 'https://passport.yandex.ru/auth'
 folder_url = 'https://mail.yandex.ru/?uid=752034275#folder/22'
 
 async def get_data():
+    
     months = {'января': 1, #dictionary for convert data to datetime
                   'февраля': 2,
                   'марта': 3,
@@ -37,7 +41,7 @@ async def get_data():
         await page.click('id=passp:sign-in')
         await page.wait_for_timeout(1000)
         await page.goto(folder_url)
-        await page.wait_for_timeout(1000)
+        await page.wait_for_timeout(1500)
         
 
         #load all messages for today
@@ -74,7 +78,7 @@ async def get_data():
             t = data[2]
             data = datetime.strptime(f"{year}/{month}/{day} {t}","%Y/%m/%d %H:%M")
             
-            url_list.append(str(url)+' '+str(data)+'\n')
+            url_list.append([url,data])
 
             await page.go_back()
 

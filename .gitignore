@@ -351,3 +351,6 @@ MigrationBackup/
 
 #CONFIG
 config.py
+
+#DATABASE
+lectures.db

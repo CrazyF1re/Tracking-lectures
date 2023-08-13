@@ -1,27 +1,15 @@
 import OBS
 import mail_parser
 import asyncio
+import db
 
 is_planned = 0
 
 async def parsing_stream():
     lst = await mail_parser.get_data()
 
-    #filter urls that repits (now its like a set)
-    if type(lst) == list:
-        with open('list.txt','r') as f:
-            global_lst = f.readlines()
-        
-        for i in lst:
-            flag = 1
-            for line in global_lst:
-                if i.split(' ')[0]  in line:
-                    flag = 0
-            if flag:
-                global_lst.append(i)
-
-        with open('list.txt','w') as f:
-            f.writelines(global_lst)
+    await db.set_data(lst)
+    
     await asyncio.sleep(3600) 
 
 async def recording_stream():
