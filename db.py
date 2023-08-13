@@ -1,13 +1,11 @@
 import sqlite3
 
-
-
 async def set_data(arr):
     database = sqlite3.connect("lectures.db")
     sql = database.cursor()
     sql.execute("""CREATE TABLE IF NOT EXISTS lectures (
         url TEXT,
-        time TEXT,
+        time BIGINT,
         UNIQUE(url)
         )""")
     database.commit()
@@ -16,4 +14,9 @@ async def set_data(arr):
         database.commit()
     sql.close()
     database.close()
+
+async def get_last_record():
+    database = database = sqlite3.connect("lectures.db")
+    sql = database.cursor()
+    return sql.execute("""SELECT FROM lectures WHERE TIME = (SELECT MAX(TIME) from lectures)""").fetchone()
     

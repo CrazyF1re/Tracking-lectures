@@ -25,11 +25,9 @@ async def get_data():
                   }
     url_list = []#list of urls with time
 
-    year = datetime.now().year#number of current year for converting
-
     async with async_playwright() as p:
         #login
-        browser =await p.chromium.launch(headless= False)
+        browser =await p.chromium.launch(headless= True)
         page =await browser.new_page()
         await page.goto(mail_url)
         await page.wait_for_url(mail_url)
@@ -73,10 +71,7 @@ async def get_data():
             data = str(await (await page.query_selector('div[class = "6943960f0ad08528event-info"]')).text_content()).split()
             
             #convert list into datetime
-            month = months[data[1]]
-            day = data[0]
-            t = data[2]
-            data = datetime.strptime(f"{year}/{month}/{day} {t}","%Y/%m/%d %H:%M")
+            data = datetime.strptime(f"{datetime.now().year}/{months[data[1]]}/{data[0]} {data[2]}","%Y/%m/%d %H:%M").timestamp()
             
             url_list.append([url,data])
 
@@ -84,3 +79,15 @@ async def get_data():
 
         return url_list
     
+async def check_the_end(url):
+    async with async_playwright() as p:
+        browser = await p.chromium.launch(headless = True)
+        page = await browser.new_page()
+        await page.goto(url)
+        try:
+            await page.query_selector('h2[text= Завершено]')
+            return 1
+        except:
+            return 0
+        
+        
