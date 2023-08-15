@@ -1,15 +1,14 @@
-import OBS
+import db
+from OBS import OBS
 import mail_parser
 import asyncio
-import db
 from datetime import datetime
-
+import time
 
 is_planned = 0
 is_recording = 0
 plan = []
-    
-
+obs = OBS() 
 async def is_time(time):
     if (time - datetime.now().timestamp() < 300):
         return 1
@@ -23,31 +22,33 @@ async def parsing_stream():
     await asyncio.sleep(3600) 
 
 async def recording_stream():
+    await asyncio.sleep(300) 
+    global is_planned
     if(is_planned):#if we have planned lecture
 
         if(is_recording):#if we record lecture
 
             if (mail_parser.check_the_end(plan[0])):#if its the end of lecture
-                pass
-                #stop recording
-                #close app 
-                #delete record from database
-                #get new record if its
+                obs.stop_recording()
+                obs.close_app()
+                db.delete_url(plan[0])
+                plan.pop()
+                is_planned = 0
+                is_recording = 0
                 
         elif(is_time(plan[1])):
-            pass
-            #run recording
-            #is_recording = 1
-        else:
-            pass
-            #sleep(300)
-
+            obs.run()
+            obs.set_up_sourse()
+            obs.set_url(plan[0])
+            obs.start_recording()
+            is_recording = 1
             
-        
     else:#get planned lecture
-        record = db.get_last_record()
+        record = await db.get_last_record()
         if(record is not None):
-            plan.append(record[0],record[1])
+            plan.append(record[0])
+            plan.append(record[1])
+            is_planned = 1
 
 
 async def main():

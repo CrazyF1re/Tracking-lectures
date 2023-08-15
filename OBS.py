@@ -6,14 +6,11 @@ from pywinauto import keyboard
 class OBS:
     def __init__(self) -> None:
         self.app = Application(backend="uia")
-        self.is_run = 0
 
-    def is_running(self):
-        return self.is_run   
-    
+    def make_active(self):
+        self.app.Dialog.click_input()
+
     def run(self):
-        if self.is_run:
-            return 1
         os.chdir("C:\\Program Files\\obs-studio\\bin\\64bit\\")
         try:
             self.app.connect(path = "obs64.exe")
@@ -22,9 +19,8 @@ class OBS:
             self.app.start('obs64.exe')
             self.app.window(best_match='OBS')
 
-        self.is_run = 1
-
     def set_up_sourse(self):
+        self.make_active()
         for i in self.app.Dialog.Dialog2.ListBox:
             f = (str(i).find('LectureRecorder'))
             if f>=0:
@@ -34,6 +30,7 @@ class OBS:
             keyboard.send_keys("{DOWN} {ENTER}LectureRecorder {ENTER 1} {TAB 6} 1920 {TAB} 1080 {ENTER}")
                 
     def set_url(self,url):
+        self.make_active()
         for i in self.app.Dialog.Dialog2.ListBox:
             f = (str(i).find('LectureRecorder'))
             if f>=0:    
@@ -42,10 +39,12 @@ class OBS:
                 return
 
     def start_recording(self):
+        self.make_active()
         self.app.Dialog.Dialog2.child_window(title="LectureRecorder", control_type="ListItem").click_input()
         keyboard.send_keys("{TAB 6}{SPACE}")
 
     def stop_recording(self):
+        self.make_active()
         self.app.Dialog.Dialog2.child_window(title="LectureRecorder", control_type="ListItem").click_input()
         keyboard.send_keys("{TAB 6}{SPACE}")
 

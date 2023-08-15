@@ -1,12 +1,20 @@
 from playwright.async_api import async_playwright
 from config import login, psw
 from datetime import datetime
+import json
 
-
-
-
-mail_url = 'https://passport.yandex.ru/auth'
+#mail_url = 'https://mail.yandex.ru/?uid=752034275#inbox'
 folder_url = 'https://mail.yandex.ru/?uid=752034275#folder/22'
+
+async def click_captcha(page):
+    try:
+        await (await  page.query_selector('input[id=js-button]')).click()
+        await page.wait_for_timeout(5000)
+        await page.goto(folder_url)
+        await page.wait_for_timeout(2000)
+
+    except:
+        pass
 
 async def get_data():
     
@@ -26,57 +34,64 @@ async def get_data():
     url_list = []#list of urls with time
 
     async with async_playwright() as p:
-        #login
-        browser =await p.chromium.launch(headless= True)
+        browser =await p.chromium.launch(headless= False)
         page =await browser.new_page()
-        await page.goto(mail_url)
-        await page.wait_for_url(mail_url)
-        await page.click('text = Почта')
-        await (await page.query_selector('[name = "login"]')).fill(login)
-        await page.click('id=passp:sign-in')
-        await page.wait_for_timeout(500)
-        await (await page.query_selector('[name="passwd"]')).fill(psw)
-        await page.click('id=passp:sign-in')
-        await page.wait_for_timeout(1000)
+        
+        #click_captcha
+        
+        # await click_captcha(page)
+
+        # await page.wait_for_url(mail_url)
+        # await page.click('text = Почта')
+        # await page.wait_for_timeout(500)
+        # await (await page.query_selector('[name = "login"]')).fill(login)
+        # await page.click('id=passp:sign-in')
+        # await page.wait_for_timeout(500)
+        # await (await page.query_selector('[name="passwd"]')).fill(psw)
+        # await page.wait_for_timeout(500)
+        # await page.click('id=passp:sign-in')
+
+        # await click_captcha(page)
+
+        # await page.wait_for_timeout(1500)
+        # await page.goto(folder_url)
+        # await page.wait_for_timeout(1500)
+
+        # await click_captcha(page)
+        
+        with open('cookies.json','r') as f:
+            await page.context.add_cookies(json.loads(f.read()))
+
+        
+
         await page.goto(folder_url)
-        await page.wait_for_timeout(1500)
-        
 
-        #load all messages for today
-        messages =await  page.query_selector_all('span[class = mail-MessageSnippet-Item_dateText]')
-        while (await messages.pop().text_content()).find(':') != -1:
-            await (await page.query_selector('[class= _nb-button-content]')).click()
-            messages = await page.query_selector_all('[class = mail-MessageSnippet-Item_dateText]')
-
-        #find index of first message today
-        for i in messages:
-            if  (await i.text_content()).find(':') == -1 :
-                index = messages.index(i)
-                break
-        index+=2
-        #if noone msg sent today    
-        if index == 0:
-            return
+        await click_captcha(page)
         
-        #get time and urls
-        pages  =await  page.query_selector_all('a[class = "mail-MessageSnippet js-message-snippet toggles-svgicon-on-important toggles-svgicon-on-unread"]')
-        for i in range(index): 
+        
+        #get time and urls        
+        pages  =await  page.query_selector_all('span[class= mail-MessageSnippet-FromText]')
+        times = await page.query_selector_all('span[class= mail-MessageSnippet-Item_dateText]')
+        for i in range(len(pages)): 
+
+            if await pages[i].text_content() != 'Webinar' or '.' in await times[i].text_content():
+                continue
+
             await pages[i].click()
-            await page.wait_for_timeout(1000)
-            #url
+            await page.wait_for_timeout(1200)
+
             url = await (await page.query_selector('a[class = "46809b2d9d518540button-link"]')).get_attribute('href')
-
-            #time as list (need to convert to time format)
-
             data = str(await (await page.query_selector('div[class = "6943960f0ad08528event-info"]')).text_content()).split()
             
-            #convert list into datetime
-            data = datetime.strptime(f"{datetime.now().year}/{months[data[1]]}/{data[0]} {data[2]}","%Y/%m/%d %H:%M").timestamp()
+            #convert list into timestamp
+            data = datetime.strptime(f"{datetime.now().year}/{months[data[1]]}/{data[0]} {data[2]}","%Y/%m/%d %H:%M").timestamp()+3600*4
             
-            url_list.append([url,data])
+            if datetime.now().timestamp()< data:
+                url_list.append([url,data])    
 
             await page.go_back()
-
+        await page.close()
+        await browser.close()
         return url_list
     
 async def check_the_end(url):
@@ -86,8 +101,12 @@ async def check_the_end(url):
         await page.goto(url)
         try:
             await page.query_selector('h2[text= Завершено]')
+            await page.close()
+            await browser.close()
             return 1
         except:
+            await page.close()
+            await browser.close()
             return 0
         
         
