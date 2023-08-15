@@ -1,5 +1,4 @@
 from playwright.async_api import async_playwright
-from config import login, psw
 from datetime import datetime
 import json
 
@@ -36,38 +35,12 @@ async def get_data():
     async with async_playwright() as p:
         browser =await p.chromium.launch(headless= False)
         page =await browser.new_page()
-        
-        #click_captcha
-        
-        # await click_captcha(page)
 
-        # await page.wait_for_url(mail_url)
-        # await page.click('text = Почта')
-        # await page.wait_for_timeout(500)
-        # await (await page.query_selector('[name = "login"]')).fill(login)
-        # await page.click('id=passp:sign-in')
-        # await page.wait_for_timeout(500)
-        # await (await page.query_selector('[name="passwd"]')).fill(psw)
-        # await page.wait_for_timeout(500)
-        # await page.click('id=passp:sign-in')
-
-        # await click_captcha(page)
-
-        # await page.wait_for_timeout(1500)
-        # await page.goto(folder_url)
-        # await page.wait_for_timeout(1500)
-
-        # await click_captcha(page)
-        
         with open('cookies.json','r') as f:
             await page.context.add_cookies(json.loads(f.read()))
 
-        
-
         await page.goto(folder_url)
-
         await click_captcha(page)
-        
         
         #get time and urls        
         pages  =await  page.query_selector_all('span[class= mail-MessageSnippet-FromText]')
