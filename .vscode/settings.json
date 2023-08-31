@@ -1,0 +1,11 @@
+{
+    "sqltools.connections": [
+        {
+            "previewLimit": 50,
+            "driver": "SQLite",
+            "name": "lectures",
+            "database": "${workspaceFolder:Tracking lectures}/lectures.db"
+        }
+    ],
+    "sqltools.useNodeRuntime": true
+}
