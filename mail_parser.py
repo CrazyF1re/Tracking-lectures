@@ -33,7 +33,7 @@ async def get_data():
     url_list = []#list of urls with time
 
     async with async_playwright() as p:
-        browser =await p.chromium.launch(headless= False)
+        browser =await p.chromium.launch(headless= True)
         page =await browser.new_page()
 
         with open('cookies.json','r') as f:
